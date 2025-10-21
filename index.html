@@ -23,6 +23,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            touch-action: pan-x pan-y;
         }
 
         #container {
@@ -68,6 +69,7 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
+            text-align: center;
         }
 
         .spinner {
@@ -103,18 +105,19 @@
 
         #progressContainer {
             width: 100%;
-            height: 8px;
+            height: 10px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+            border-radius: 5px;
             margin-bottom: 15px;
             cursor: pointer;
             position: relative;
+            touch-action: none;
         }
 
         #progressBar {
             height: 100%;
             background: #ff3c00;
-            border-radius: 4px;
+            border-radius: 5px;
             width: 0%;
             transition: width 0.1s;
             position: relative;
@@ -123,18 +126,19 @@
         #progressBar::after {
             content: '';
             position: absolute;
-            right: -6px;
+            right: -8px;
             top: 50%;
             transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
             background: #ff3c00;
             border-radius: 50%;
             opacity: 0;
             transition: opacity 0.2s;
         }
 
-        #progressContainer:hover #progressBar::after {
+        #progressContainer:hover #progressBar::after,
+        #progressContainer:active #progressBar::after {
             opacity: 1;
         }
 
@@ -164,18 +168,19 @@
             color: white;
             font-size: 1.2rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .control-btn:hover {
+        .control-btn:hover, .control-btn:active {
             background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         #playPause {
@@ -183,7 +188,7 @@
             background: #ff3c00;
         }
 
-        #playPause:hover {
+        #playPause:hover, #playPause:active {
             background: #ff5c2a;
         }
 
@@ -218,7 +223,7 @@
             background: #ff3c00;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 25px;
             font-weight: bold;
             cursor: pointer;
@@ -226,9 +231,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 2px 8px rgba(255, 60, 0, 0.3);
         }
 
-        #vrButton:hover {
+        #vrButton:hover, #vrButton:active {
             background: #ff5c2a;
             transform: scale(1.05);
         }
@@ -246,6 +252,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .instructions {
@@ -257,9 +264,10 @@
             color: #fff;
             font-size: 0.9rem;
             background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
+            padding: 12px;
             z-index: 90;
             transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
         }
 
         .gyro-permission {
@@ -268,52 +276,78 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 15px;
             text-align: center;
             z-index: 200;
             max-width: 80%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
         .gyro-permission button {
             background: #ff3c00;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 24px;
+            border-radius: 8px;
             margin-top: 15px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .gyro-permission button:hover, .gyro-permission button:active {
+            background: #ff5c2a;
+            transform: scale(1.05);
         }
 
         /* تحسينات للهواتف */
         @media (max-width: 768px) {
             #controls {
-                padding: 10px 15px;
+                padding: 12px 15px;
             }
             
             .control-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 1.3rem;
+                width: 50px;
+                height: 50px;
+                font-size: 1.4rem;
             }
             
             #playPause {
-                font-size: 1.6rem;
+                font-size: 1.7rem;
             }
             
             #volumeSlider {
-                width: 60px;
+                width: 70px;
             }
             
             #vrButton {
-                padding: 8px 15px;
+                padding: 10px 16px;
                 font-size: 0.9rem;
             }
             
             .instructions {
-                font-size: 0.8rem;
+                font-size: 0.85rem;
                 bottom: 110px;
+                padding: 10px;
+            }
+            
+            #modeIndicator {
+                top: 15px;
+                left: 15px;
+                font-size: 0.85rem;
+                padding: 7px 12px;
+            }
+            
+            #loading {
+                font-size: 1.3rem;
+                padding: 18px;
+            }
+            
+            .spinner {
+                width: 45px;
+                height: 45px;
             }
         }
 
@@ -331,6 +365,49 @@
                 left: 10px;
                 font-size: 0.8rem;
                 padding: 6px 12px;
+            }
+            
+            .control-btn {
+                width: 48px;
+                height: 48px;
+            }
+            
+            #vrButton {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+            
+            .instructions {
+                font-size: 0.8rem;
+                bottom: 105px;
+            }
+            
+            #progressContainer {
+                height: 8px;
+                margin-bottom: 12px;
+            }
+            
+            #timeDisplay {
+                margin-bottom: 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* تحسينات للشاشات الصغيرة جداً */
+        @media (max-width: 360px) {
+            #vrButton span {
+                display: none;
+            }
+            
+            #vrButton {
+                padding: 10px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+            }
+            
+            .instructions {
+                font-size: 0.75rem;
             }
         }
 
@@ -372,8 +449,8 @@
             background: rgba(0, 0, 0, 0.7);
             border: none;
             color: white;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -383,6 +460,13 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             pointer-events: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .vr-control-btn:hover, .vr-control-btn:active {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.05);
         }
 
         /* لوحة التحكم المتقدمة */
@@ -399,6 +483,9 @@
             display: none;
             min-width: 280px;
             max-width: 320px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .control-header {
@@ -431,7 +518,7 @@
             transition: background 0.2s;
         }
 
-        .close-btn:hover {
+        .close-btn:hover, .close-btn:active {
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -518,8 +605,8 @@
             background: rgba(255, 255, 255, 0.1);
             border: none;
             color: white;
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -529,7 +616,7 @@
             transition: all 0.2s;
         }
 
-        .time-btn:hover {
+        .time-btn:hover, .time-btn:active {
             background: rgba(255, 255, 255, 0.2);
         }
 
@@ -540,8 +627,8 @@
             background: rgba(0, 0, 0, 0.7);
             border: none;
             color: white;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -551,14 +638,21 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        #advancedToggle:hover, #advancedToggle:active {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.05);
         }
 
         .reset-btn {
             background: #ff3c00;
             border: none;
             color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 10px 15px;
+            border-radius: 8px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
@@ -566,8 +660,22 @@
             margin-top: 10px;
         }
 
-        .reset-btn:hover {
+        .reset-btn:hover, .reset-btn:active {
             background: #ff5c2a;
+            transform: scale(1.02);
+        }
+
+        /* تحسينات اللمس */
+        @media (hover: none) {
+            .control-btn:hover, #vrButton:hover, .vr-control-btn:hover, 
+            #advancedToggle:hover, .reset-btn:hover, .gyro-permission button:hover {
+                transform: none;
+            }
+            
+            .control-btn:active, #vrButton:active, .vr-control-btn:active, 
+            #advancedToggle:active, .reset-btn:active, .gyro-permission button:active {
+                transform: scale(0.95);
+            }
         }
     </style>
 </head>
@@ -635,7 +743,7 @@
                 <div id="rightControls">
                     <button id="vrButton">
                         <i class="fas fa-vr-cardboard"></i>
-                        وضع VR
+                        <span>وضع VR</span>
                     </button>
                     <button id="fullscreenBtn" class="control-btn">
                         <i class="fas fa-expand"></i>
@@ -1399,6 +1507,7 @@
 
         // إخفاء عناصر التحكم تلقائياً
         container.addEventListener('mousemove', showControls);
+        container.addEventListener('touchstart', showControls);
 
         function showControls() {
             if (!isVRMode) {
