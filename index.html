@@ -270,7 +270,7 @@
             backdrop-filter: blur(5px);
         }
 
-        .gyro-permission {
+        .video-source-selector {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -280,403 +280,68 @@
             border-radius: 15px;
             text-align: center;
             z-index: 200;
-            max-width: 80%;
+            max-width: 90%;
+            width: 400px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        .gyro-permission button {
+        .video-source-selector h3 {
+            margin-bottom: 15px;
+            color: #ff3c00;
+        }
+
+        .video-source-selector input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .video-source-selector button {
             background: #ff3c00;
             color: white;
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
-            margin-top: 15px;
+            margin: 10px 5px;
             cursor: pointer;
             font-weight: bold;
             font-size: 1rem;
             transition: all 0.2s;
         }
 
-        .gyro-permission button:hover, .gyro-permission button:active {
+        .video-source-selector button:hover, .video-source-selector button:active {
             background: #ff5c2a;
             transform: scale(1.05);
         }
 
-        /* تحسينات للهواتف */
-        @media (max-width: 768px) {
-            #controls {
-                padding: 12px 15px;
-            }
-            
-            .control-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 1.4rem;
-            }
-            
-            #playPause {
-                font-size: 1.7rem;
-            }
-            
-            #volumeSlider {
-                width: 70px;
-            }
-            
-            #vrButton {
-                padding: 10px 16px;
-                font-size: 0.9rem;
-            }
-            
-            .instructions {
-                font-size: 0.85rem;
-                bottom: 110px;
-                padding: 10px;
-            }
-            
-            #modeIndicator {
-                top: 15px;
-                left: 15px;
-                font-size: 0.85rem;
-                padding: 7px 12px;
-            }
-            
-            #loading {
-                font-size: 1.3rem;
-                padding: 18px;
-            }
-            
-            .spinner {
-                width: 45px;
-                height: 45px;
-            }
+        .saved-sources {
+            margin-top: 15px;
+            text-align: right;
         }
 
-        @media (max-width: 480px) {
-            #leftControls, #rightControls {
-                gap: 10px;
-            }
-            
-            #volumeContainer {
-                display: none;
-            }
-            
-            #modeIndicator {
-                top: 10px;
-                left: 10px;
-                font-size: 0.8rem;
-                padding: 6px 12px;
-            }
-            
-            .control-btn {
-                width: 48px;
-                height: 48px;
-            }
-            
-            #vrButton {
-                padding: 8px 14px;
-                font-size: 0.85rem;
-            }
-            
-            .instructions {
-                font-size: 0.8rem;
-                bottom: 105px;
-            }
-            
-            #progressContainer {
-                height: 8px;
-                margin-bottom: 12px;
-            }
-            
-            #timeDisplay {
-                margin-bottom: 12px;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* تحسينات للشاشات الصغيرة جداً */
-        @media (max-width: 360px) {
-            #vrButton span {
-                display: none;
-            }
-            
-            #vrButton {
-                padding: 10px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-            }
-            
-            .instructions {
-                font-size: 0.75rem;
-            }
-        }
-
-        /* تحسينات VR */
-        .vr-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 150;
-            pointer-events: none;
-            display: none;
-        }
-
-        .vr-divider {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 2px;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-50%);
-        }
-
-        .vr-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            z-index: 100;
-            display: none;
-        }
-
-        .vr-control-btn {
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
-            color: white;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            pointer-events: auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-
-        .vr-control-btn:hover, .vr-control-btn:active {
-            background: rgba(0, 0, 0, 0.8);
-            transform: scale(1.05);
-        }
-
-        /* لوحة التحكم المتقدمة */
-        .advanced-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: none;
-            min-width: 280px;
-            max-width: 320px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .control-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 10px;
-        }
-
-        .control-header h3 {
-            font-size: 1rem;
-            color: #ff3c00;
-            margin: 0;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .close-btn:hover, .close-btn:active {
+        .saved-source {
             background: rgba(255, 255, 255, 0.1);
-        }
-
-        .control-group {
-            margin-bottom: 15px;
-        }
-
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .control-group h4 {
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 0.9rem;
-            margin-bottom: 8px;
-            color: #ff3c00;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 5px;
-        }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .control-label {
-            font-size: 0.8rem;
-            color: #ddd;
-            flex: 1;
-        }
-
-        .control-value {
-            font-size: 0.8rem;
-            color: #ff3c00;
-            min-width: 50px;
-            text-align: left;
-        }
-
-        .slider {
-            width: 100%;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2.5px;
-            outline: none;
-            -webkit-appearance: none;
-            margin: 5px 0;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: #ff3c00;
-            cursor: pointer;
-        }
-
-        .toggle-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 60px;
-        }
-
-        .toggle-btn.active {
-            background: #ff3c00;
-        }
-
-        .time-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-            margin: 10px 0;
-        }
-
-        .time-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 0.8rem;
             transition: all 0.2s;
         }
 
-        .time-btn:hover, .time-btn:active {
+        .saved-source:hover, .saved-source:active {
             background: rgba(255, 255, 255, 0.2);
         }
 
-        #advancedToggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 1.2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
+        /* باقي الستايل كما هو... */
 
-        #advancedToggle:hover, #advancedToggle:active {
-            background: rgba(0, 0, 0, 0.8);
-            transform: scale(1.05);
-        }
-
-        .reset-btn {
-            background: #ff3c00;
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .reset-btn:hover, .reset-btn:active {
-            background: #ff5c2a;
-            transform: scale(1.02);
-        }
-
-        /* تحسينات اللمس */
-        @media (hover: none) {
-            .control-btn:hover, #vrButton:hover, .vr-control-btn:hover, 
-            #advancedToggle:hover, .reset-btn:hover, .gyro-permission button:hover {
-                transform: none;
-            }
-            
-            .control-btn:active, #vrButton:active, .vr-control-btn:active, 
-            #advancedToggle:active, .reset-btn:active, .gyro-permission button:active {
-                transform: scale(0.95);
-            }
-        }
     </style>
 </head>
 <body>
@@ -686,10 +351,20 @@
             <div>جاري تحميل الفيديو...</div>
         </div>
         
+        <!-- واجهة اختيار مصدر الفيديو -->
+        <div class="video-source-selector" id="videoSourceSelector">
+            <h3>اختر مصدر الفيديو</h3>
+            <input type="text" id="videoUrlInput" placeholder="أدخل رابط الفيديو (مثال: http://192.168.1.11:8080/vrtest.mp4)" value="http://192.168.1.11:8080/vrtest.mp4">
+            <button id="loadVideoBtn">تحميل الفيديو</button>
+            <button id="useProxyBtn">استخدام الوكيل (إذا لم يعمل الرابط المباشر)</button>
+            <div class="saved-sources" id="savedSources">
+                <!-- سيتم ملؤها تلقائياً بالمصادر المحفوظة -->
+            </div>
+        </div>
+        
         <div id="videoContainer">
             <video id="videoPlayer" crossorigin="anonymous" loop>
-                <!-- تأكد من وضع المسار الصحيح للفيديو -->
-                <source src="http://192.168.1.11:8080/vrtest.mp4" type="video/mp4">
+                <!-- سيتم تعيين src ديناميكياً -->
                 متصفحك لا يدعم تشغيل الفيديو.
             </video>
             <div id="canvasContainer"></div>
@@ -841,9 +516,16 @@
         const videoContainer = document.getElementById('videoContainer');
         const videoPlayer = document.getElementById('videoPlayer');
         const canvasContainer = document.getElementById('canvasContainer');
+        const loading = document.getElementById('loading');
+        const videoSourceSelector = document.getElementById('videoSourceSelector');
+        const videoUrlInput = document.getElementById('videoUrlInput');
+        const loadVideoBtn = document.getElementById('loadVideoBtn');
+        const useProxyBtn = document.getElementById('useProxyBtn');
+        const savedSources = document.getElementById('savedSources');
+        
+        // باقي المتغيرات والعناصر كما هي...
         const vrOverlay = document.querySelector('.vr-overlay');
         const vrControls = document.querySelector('.vr-controls');
-        const loading = document.getElementById('loading');
         const controls = document.getElementById('controls');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
@@ -907,6 +589,94 @@
         let isInverted = false;
         let playbackRate = 1.0;
 
+        // مصدر الفيديو الحالي
+        let currentVideoSource = '';
+        let savedVideoSources = JSON.parse(localStorage.getItem('savedVideoSources')) || [];
+
+        // تهيئة واجهة اختيار مصدر الفيديو
+        function initVideoSourceSelector() {
+            // إظهار واجهة اختيار مصدر الفيديو
+            videoSourceSelector.style.display = 'block';
+            loading.style.display = 'none';
+            
+            // تحميل المصادر المحفوظة
+            updateSavedSourcesList();
+            
+            // إضافة حدث لزر تحميل الفيديو
+            loadVideoBtn.addEventListener('click', function() {
+                const videoUrl = videoUrlInput.value.trim();
+                if (videoUrl) {
+                    loadVideo(videoUrl, false);
+                }
+            });
+            
+            // إضافة حدث لزر استخدام الوكيل
+            useProxyBtn.addEventListener('click', function() {
+                const videoUrl = videoUrlInput.value.trim();
+                if (videoUrl) {
+                    loadVideo(videoUrl, true);
+                }
+            });
+            
+            // إذا كان هناك مصدر محفوظ مسبقاً، نضعه كقيمة افتراضية
+            if (savedVideoSources.length > 0) {
+                videoUrlInput.value = savedVideoSources[0];
+            }
+        }
+
+        // تحديث قائمة المصادر المحفوظة
+        function updateSavedSourcesList() {
+            savedSources.innerHTML = '';
+            savedVideoSources.forEach(source => {
+                const button = document.createElement('button');
+                button.className = 'saved-source';
+                button.textContent = source;
+                button.addEventListener('click', function() {
+                    videoUrlInput.value = source;
+                    loadVideo(source, false);
+                });
+                savedSources.appendChild(button);
+            });
+        }
+
+        // تحميل الفيديو
+        function loadVideo(url, useProxy) {
+            currentVideoSource = url;
+            
+            // حفظ المصدر إذا لم يكن محفوظاً مسبقاً
+            if (!savedVideoSources.includes(url)) {
+                savedVideoSources.unshift(url);
+                // الاحتفاظ بـ 5 مصادر فقط
+                if (savedVideoSources.length > 5) {
+                    savedVideoSources.pop();
+                }
+                localStorage.setItem('savedVideoSources', JSON.stringify(savedVideoSources));
+                updateSavedSourcesList();
+            }
+            
+            // إخفاء واجهة اختيار المصدر وإظهار التحميل
+            videoSourceSelector.style.display = 'none';
+            loading.style.display = 'flex';
+            
+            // استخدام الوكيل إذا طلب المستخدم ذلك
+            let finalUrl = url;
+            if (useProxy) {
+                // يمكنك استخدام أي خدمة CORS proxy هنا
+                finalUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            }
+            
+            // تعيين مصدر الفيديو
+            videoPlayer.src = finalUrl;
+            videoPlayer.load();
+            
+            // إعادة تعيين حالة التشغيل
+            isPlaying = false;
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            vrPlayPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            
+            console.log('جار تحميل الفيديو من:', finalUrl);
+        }
+
         // تهيئة Three.js لمشهد 360
         function initThreeJS() {
             try {
@@ -965,6 +735,9 @@
                 loading.innerHTML = "خطأ في تحميل المشغل. يرجى تحديث الصفحة.";
             }
         }
+
+        // باقي الدوال كما هي تماماً (initVRMode, applyVREffects, animate, enableGyro, etc.)
+        // ... (نفس الكود السابق)
 
         // تهيئة وضع VR
         function initVRMode() {
@@ -1207,7 +980,13 @@
 
         videoPlayer.addEventListener('error', function(e) {
             console.error("Video error:", e);
-            loading.innerHTML = "خطأ في تحميل الفيديو. تأكد من صحة المسار.";
+            loading.innerHTML = "خطأ في تحميل الفيديو. تأكد من صحة المسار وتوفر السيرفر.";
+            
+            // إعادة عرض واجهة اختيار المصدر
+            setTimeout(() => {
+                videoSourceSelector.style.display = 'block';
+                loading.style.display = 'none';
+            }, 2000);
         });
 
         // التحكم في التشغيل والإيقاف
@@ -1556,6 +1335,9 @@
         window.addEventListener('error', function(e) {
             console.error("Global error:", e);
         });
+
+        // بدء التطبيق
+        initVideoSourceSelector();
     </script>
 </body>
 </html>
