@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل فيديو 360 درجة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/DeviceOrientationControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #videoContainer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: #000;
+        }
+
+        #videoPlayer {
+            display: none;
+        }
+
+        #canvasContainer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 1.5rem;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ff3c00;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            padding: 15px 20px;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+            transform: translateY(0);
+        }
+
+        .controls-hidden {
+            opacity: 0 !important;
+            pointer-events: none;
+            transform: translateY(100%) !important;
+        }
+
+        #progressContainer {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        #progressBar {
+            height: 100%;
+            background: #ff3c00;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s;
+            position: relative;
+        }
+
+        #progressBar::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #ff3c00;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        #progressContainer:hover #progressBar::after {
+            opacity: 1;
+        }
+
+        #timeDisplay {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        #mainControls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #leftControls, #rightControls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        #playPause {
+            font-size: 1.5rem;
+            background: #ff3c00;
+        }
+
+        #playPause:hover {
+            background: #ff5c2a;
+        }
+
+        #volumeContainer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volumeSlider {
+            width: 80px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2.5px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        #volumeLevel {
+            height: 100%;
+            background: white;
+            border-radius: 2.5px;
+            width: 100%;
+            transition: width 0.1s;
+        }
+
+        #fullscreenBtn {
+            font-size: 1.2rem;
+        }
+
+        #vrButton {
+            background: #ff3c00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #vrButton:hover {
+            background: #ff5c2a;
+            transform: scale(1.05);
+        }
+
+        #modeIndicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 50;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 120px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            z-index: 90;
+            transition: opacity 0.3s;
+        }
+
+        .gyro-permission {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 200;
+            max-width: 80%;
+        }
+
+        .gyro-permission button {
+            background: #ff3c00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* تحسينات للهواتف */
+        @media (max-width: 768px) {
+            #controls {
+                padding: 10px 15px;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+            
+            #playPause {
+                font-size: 1.6rem;
+            }
+            
+            #volumeSlider {
+                width: 60px;
+            }
+            
+            #vrButton {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .instructions {
+                font-size: 0.8rem;
+                bottom: 110px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #leftControls, #rightControls {
+                gap: 10px;
+            }
+            
+            #volumeContainer {
+                display: none;
+            }
+            
+            #modeIndicator {
+                top: 10px;
+                left: 10px;
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
+
+        /* تحسينات VR */
+        .vr-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 150;
+            pointer-events: none;
+            display: none;
+        }
+
+        .vr-divider {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-50%);
+        }
+
+        .vr-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 100;
+            display: none;
+        }
+
+        .vr-control-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: auto;
+        }
+
+        /* لوحة التحكم المتقدمة */
+        .advanced-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            min-width: 280px;
+            max-width: 320px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .control-header h3 {
+            font-size: 1rem;
+            color: #ff3c00;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #ff3c00;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .control-label {
+            font-size: 0.8rem;
+            color: #ddd;
+            flex: 1;
+        }
+
+        .control-value {
+            font-size: 0.8rem;
+            color: #ff3c00;
+            min-width: 50px;
+            text-align: left;
+        }
+
+        .slider {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2.5px;
+            outline: none;
+            -webkit-appearance: none;
+            margin: 5px 0;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ff3c00;
+            cursor: pointer;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 60px;
+        }
+
+        .toggle-btn.active {
+            background: #ff3c00;
+        }
+
+        .time-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .time-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .time-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #advancedToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.2rem;
+        }
+
+        .reset-btn {
+            background: #ff3c00;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #ff5c2a;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>جاري تحميل الفيديو...</div>
+        </div>
+        
+        <div id="videoContainer">
+            <video id="videoPlayer" crossorigin="anonymous" loop>
+                <!-- تأكد من وضع المسار الصحيح للفيديو -->
+                <source src="http://192.168.1.11:8080/vrtest.mp4" type="video/mp4">
+                متصفحك لا يدعم تشغيل الفيديو.
+            </video>
+            <div id="canvasContainer"></div>
+            <div class="vr-overlay">
+                <div class="vr-divider"></div>
+                <div class="vr-controls">
+                    <button class="vr-control-btn" id="vrPlayPause">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                    <button class="vr-control-btn" id="vrExit">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button class="vr-control-btn" id="vrResetView">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="modeIndicator">
+            <i class="fas fa-vr-cardboard"></i>
+            <span>وضع العرض: عادي</span>
+        </div>
+        
+        <div class="instructions">
+            على الكمبيوتر: اسحب بالماوس للتحريك | على الهاتف: حرك جهازك للتحريك
+        </div>
+        
+        <div id="controls">
+            <div id="progressContainer">
+                <div id="progressBar"></div>
+            </div>
+            <div id="timeDisplay">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+            <div id="mainControls">
+                <div id="leftControls">
+                    <button id="playPause" class="control-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div id="volumeContainer">
+                        <button id="volumeBtn" class="control-btn">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <div id="volumeSlider">
+                            <div id="volumeLevel"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="rightControls">
+                    <button id="vrButton">
+                        <i class="fas fa-vr-cardboard"></i>
+                        وضع VR
+                    </button>
+                    <button id="fullscreenBtn" class="control-btn">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- زر التحكم المتقدم -->
+        <button id="advancedToggle">
+            <i class="fas fa-sliders-h"></i>
+        </button>
+
+        <!-- لوحة التحكم المتقدمة -->
+        <div class="advanced-controls" id="advancedControls">
+            <div class="control-header">
+                <h3>الإعدادات المتقدمة</h3>
+                <button class="close-btn" id="closeAdvanced">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="control-group">
+                <h4>إعدادات الفيديو</h4>
+                <div class="control-row">
+                    <span class="control-label">الجودة:</span>
+                    <button class="toggle-btn active" id="qualityBtn">HD</button>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">التكرار:</span>
+                    <button class="toggle-btn active" id="loopBtn">ON</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h4>إعدادات VR</h4>
+                <div class="control-row">
+                    <span class="control-label">المسافة بين العينين:</span>
+                    <span class="control-value" id="ipdValue">0.5</span>
+                </div>
+                <input type="range" class="slider" id="ipdSlider" min="0.1" max="1.5" step="0.1" value="0.5">
+                
+                <div class="control-row">
+                    <span class="control-label">حجم الإطار:</span>
+                    <span class="control-value" id="frameSizeValue">100%</span>
+                </div>
+                <input type="range" class="slider" id="frameSizeSlider" min="70" max="130" step="5" value="100">
+                
+                <div class="control-row">
+                    <span class="control-label">مقياس العرض:</span>
+                    <span class="control-value" id="scaleValue">100%</span>
+                </div>
+                <input type="range" class="slider" id="scaleSlider" min="50" max="150" step="5" value="100">
+                
+                <div class="control-row">
+                    <span class="control-label">عكس الصورة:</span>
+                    <button class="toggle-btn" id="invertBtn">OFF</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h4>التحكم بالوقت</h4>
+                <div class="time-controls">
+                    <button class="time-btn" id="back10s">-10s</button>
+                    <span class="control-value" id="timeDisplayAdv">00:00 / 00:00</span>
+                    <button class="time-btn" id="forward10s">+10s</button>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">سرعة التشغيل:</span>
+                    <span class="control-value" id="speedValue">1.0x</span>
+                </div>
+                <input type="range" class="slider" id="speedSlider" min="0.25" max="2.0" step="0.25" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <h4>إعدادات الصوت</h4>
+                <div class="control-row">
+                    <span class="control-label">مسار الصوت:</span>
+                    <span class="control-value">Track 1</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">مستوى الصوت:</span>
+                    <span class="control-value" id="audioLevelValue">50%</span>
+                </div>
+                <input type="range" class="slider" id="audioLevelSlider" min="0" max="100" step="5" value="50">
+            </div>
+
+            <button class="reset-btn" id="resetBtn">إعادة الضبط</button>
+        </div>
+    </div>
+
+    <script>
+        // العناصر الرئيسية
+        const container = document.getElementById('container');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const vrOverlay = document.querySelector('.vr-overlay');
+        const vrControls = document.querySelector('.vr-controls');
+        const loading = document.getElementById('loading');
+        const controls = document.getElementById('controls');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const durationDisplay = document.getElementById('duration');
+        const playPauseBtn = document.getElementById('playPause');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLevel = document.getElementById('volumeLevel');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const vrButton = document.getElementById('vrButton');
+        const modeIndicator = document.getElementById('modeIndicator');
+        const instructions = document.querySelector('.instructions');
+
+        // عناصر تحكم VR
+        const vrPlayPauseBtn = document.getElementById('vrPlayPause');
+        const vrExitBtn = document.getElementById('vrExit');
+        const vrResetViewBtn = document.getElementById('vrResetView');
+
+        // عناصر التحكم المتقدمة
+        const advancedToggle = document.getElementById('advancedToggle');
+        const advancedControls = document.getElementById('advancedControls');
+        const closeAdvanced = document.getElementById('closeAdvanced');
+        const qualityBtn = document.getElementById('qualityBtn');
+        const loopBtn = document.getElementById('loopBtn');
+        const ipdSlider = document.getElementById('ipdSlider');
+        const ipdValue = document.getElementById('ipdValue');
+        const frameSizeSlider = document.getElementById('frameSizeSlider');
+        const frameSizeValue = document.getElementById('frameSizeValue');
+        const scaleSlider = document.getElementById('scaleSlider');
+        const scaleValue = document.getElementById('scaleValue');
+        const invertBtn = document.getElementById('invertBtn');
+        const back10s = document.getElementById('back10s');
+        const forward10s = document.getElementById('forward10s');
+        const timeDisplayAdv = document.getElementById('timeDisplayAdv');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const audioLevelSlider = document.getElementById('audioLevelSlider');
+        const audioLevelValue = document.getElementById('audioLevelValue');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // المتغيرات
+        let isPlaying = false;
+        let isFullscreen = false;
+        let isVRMode = false;
+        let isMouseMoving = false;
+        let mouseMoveTimeout;
+        let isGyroEnabled = false;
+        let orientationRequested = false;
+        
+        // Three.js variables
+        let scene, camera, renderer, controls3D, videoTexture, sphere;
+        let leftScene, leftCamera, leftRenderer;
+        let rightScene, rightCamera, rightRenderer;
+        let deviceOrientationControls;
+
+        // متغيرات التحكم المتقدم
+        let eyeDistance = 0.5;
+        let frameSize = 1.0;
+        let scaleFactor = 1.0;
+        let isInverted = false;
+        let playbackRate = 1.0;
+
+        // تهيئة Three.js لمشهد 360
+        function initThreeJS() {
+            try {
+                // إنشاء المشهد
+                scene = new THREE.Scene();
+                
+                // إنشاء الكاميرا
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(0, 0, 0.1);
+                
+                // إنشاء العارض
+                renderer = new THREE.WebGLRenderer({ 
+                    antialias: true,
+                    alpha: false,
+                    powerPreference: "high-performance"
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                renderer.setClearColor(0x000000, 1);
+                canvasContainer.appendChild(renderer.domElement);
+                
+                // إنشاء كرة لعرض الفيديو 360
+                const geometry = new THREE.SphereGeometry(500, 64, 64);
+                geometry.scale(-1, 1, 1); // عكس الكرة لرؤية الداخل
+                
+                // إنشاء نسيج الفيديو
+                videoTexture = new THREE.VideoTexture(videoPlayer);
+                videoTexture.minFilter = THREE.LinearFilter;
+                videoTexture.magFilter = THREE.LinearFilter;
+                videoTexture.format = THREE.RGBFormat;
+                
+                const material = new THREE.MeshBasicMaterial({ 
+                    map: videoTexture
+                });
+                
+                sphere = new THREE.Mesh(geometry, material);
+                scene.add(sphere);
+                
+                // إضافة تحكم بالماوس
+                controls3D = new THREE.OrbitControls(camera, renderer.domElement);
+                controls3D.enableZoom = false;
+                controls3D.enablePan = false;
+                controls3D.rotateSpeed = -0.25;
+                
+                // تهيئة تحكم الجايروسكوب
+                if (window.DeviceOrientationEvent) {
+                    deviceOrientationControls = new THREE.DeviceOrientationControls(camera);
+                }
+                
+                console.log("Three.js initialized successfully");
+                
+                // بدء التقديم
+                animate();
+            } catch (error) {
+                console.error("Error initializing Three.js:", error);
+                loading.innerHTML = "خطأ في تحميل المشغل. يرجى تحديث الصفحة.";
+            }
+        }
+
+        // تهيئة وضع VR
+        function initVRMode() {
+            try {
+                // مسح العارض الرئيسي
+                while(canvasContainer.firstChild) {
+                    canvasContainer.removeChild(canvasContainer.firstChild);
+                }
+                
+                // إنشاء مشهد للعين اليسرى
+                leftScene = new THREE.Scene();
+                leftCamera = new THREE.PerspectiveCamera(70, (window.innerWidth/2) / window.innerHeight, 0.1, 1000);
+                leftCamera.position.set(-eyeDistance, 0, 0);
+                
+                leftRenderer = new THREE.WebGLRenderer({ 
+                    antialias: true,
+                    alpha: false,
+                    powerPreference: "high-performance"
+                });
+                leftRenderer.setSize(window.innerWidth/2, window.innerHeight);
+                leftRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                leftRenderer.setClearColor(0x000000, 1);
+                leftRenderer.domElement.style.position = 'absolute';
+                leftRenderer.domElement.style.left = '0';
+                leftRenderer.domElement.style.top = '0';
+                leftRenderer.domElement.style.width = '50%';
+                leftRenderer.domElement.style.height = '100%';
+                canvasContainer.appendChild(leftRenderer.domElement);
+                
+                // إنشاء مشهد للعين اليمنى
+                rightScene = new THREE.Scene();
+                rightCamera = new THREE.PerspectiveCamera(70, (window.innerWidth/2) / window.innerHeight, 0.1, 1000);
+                rightCamera.position.set(eyeDistance, 0, 0);
+                
+                rightRenderer = new THREE.WebGLRenderer({ 
+                    antialias: true,
+                    alpha: false,
+                    powerPreference: "high-performance"
+                });
+                rightRenderer.setSize(window.innerWidth/2, window.innerHeight);
+                rightRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                rightRenderer.setClearColor(0x000000, 1);
+                rightRenderer.domElement.style.position = 'absolute';
+                rightRenderer.domElement.style.left = '50%';
+                rightRenderer.domElement.style.top = '0';
+                rightRenderer.domElement.style.width = '50%';
+                rightRenderer.domElement.style.height = '100%';
+                canvasContainer.appendChild(rightRenderer.domElement);
+                
+                // إضافة الكرة لكلا المشهدين
+                const geometry = new THREE.SphereGeometry(500, 64, 64);
+                geometry.scale(-1, 1, 1);
+                
+                const material = new THREE.MeshBasicMaterial({ 
+                    map: videoTexture
+                });
+                
+                const leftSphere = new THREE.Mesh(geometry, material);
+                leftScene.add(leftSphere);
+                
+                const rightSphere = new THREE.Mesh(geometry, material);
+                rightScene.add(rightSphere);
+                
+                // تطبيق تأثيرات VR
+                applyVREffects();
+                
+                // إظهار VR overlay
+                vrOverlay.style.display = 'block';
+                vrControls.style.display = 'flex';
+                
+                // تفعيل الجايروسكوب
+                enableGyro();
+                
+                console.log("VR mode initialized successfully");
+            } catch (error) {
+                console.error("Error initializing VR mode:", error);
+            }
+        }
+        
+        // تطبيق تأثيرات VR
+        function applyVREffects() {
+            // تطبيق المسافة بين العينين
+            if (leftCamera && rightCamera) {
+                leftCamera.position.x = -eyeDistance;
+                rightCamera.position.x = eyeDistance;
+            }
+            
+            // تطبيق حجم الإطار
+            if (leftRenderer && rightRenderer) {
+                const frameWidth = (window.innerWidth/2) * frameSize;
+                const frameHeight = window.innerHeight * frameSize;
+                
+                leftRenderer.setSize(frameWidth, frameHeight);
+                rightRenderer.setSize(frameWidth, frameHeight);
+                
+                // مركزة الإطارات
+                const leftOffset = (window.innerWidth/2 - frameWidth) / 2;
+                const rightOffset = window.innerWidth/2 + (window.innerWidth/2 - frameWidth) / 2;
+                
+                leftRenderer.domElement.style.left = `${leftOffset}px`;
+                rightRenderer.domElement.style.left = `${rightOffset}px`;
+                
+                const verticalOffset = (window.innerHeight - frameHeight) / 2;
+                leftRenderer.domElement.style.top = `${verticalOffset}px`;
+                rightRenderer.domElement.style.top = `${verticalOffset}px`;
+            }
+            
+            // تطبيق مقياس العرض
+            if (leftCamera && rightCamera) {
+                leftCamera.fov = 70 * scaleFactor;
+                rightCamera.fov = 70 * scaleFactor;
+                leftCamera.updateProjectionMatrix();
+                rightCamera.updateProjectionMatrix();
+            }
+            
+            // تطبيق عكس الصورة
+            if (isInverted) {
+                document.body.style.filter = 'invert(1)';
+            } else {
+                document.body.style.filter = 'none';
+            }
+        }
+        
+        // دورة التقديم
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (isVRMode) {
+                // تحديث التحكم بالجايروسكوب في وضع VR
+                if (isGyroEnabled && deviceOrientationControls) {
+                    deviceOrientationControls.update();
+                    // تطبيق نفس الدوران على كلا الكاميرات
+                    if (leftCamera && rightCamera) {
+                        leftCamera.quaternion.copy(camera.quaternion);
+                        rightCamera.quaternion.copy(camera.quaternion);
+                    }
+                }
+                
+                if (leftRenderer && leftScene && leftCamera) {
+                    leftRenderer.render(leftScene, leftCamera);
+                }
+                if (rightRenderer && rightScene && rightCamera) {
+                    rightRenderer.render(rightScene, rightCamera);
+                }
+            } else {
+                // الوضع العادي
+                if (isGyroEnabled && deviceOrientationControls) {
+                    deviceOrientationControls.update();
+                }
+                
+                if (controls3D) {
+                    controls3D.update();
+                }
+                if (renderer && scene && camera) {
+                    renderer.render(scene, camera);
+                }
+            }
+        }
+
+        // تفعيل الجايروسكوب
+        function enableGyro() {
+            if (typeof DeviceOrientationEvent !== 'undefined') {
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    // طلب الإذن على iOS
+                    if (!orientationRequested) {
+                        showGyroPermissionDialog();
+                    } else {
+                        initDeviceOrientationControls();
+                    }
+                } else {
+                    // المتصفحات الأخرى
+                    initDeviceOrientationControls();
+                }
+            } else {
+                console.log("DeviceOrientationEvent not supported");
+            }
+        }
+
+        function initDeviceOrientationControls() {
+            try {
+                deviceOrientationControls = new THREE.DeviceOrientationControls(camera);
+                isGyroEnabled = true;
+                if (controls3D) controls3D.enabled = false;
+                console.log("Gyroscope enabled");
+            } catch (error) {
+                console.error("Error enabling gyroscope:", error);
+            }
+        }
+
+        // إيقاف الجايروسكوب
+        function disableGyro() {
+            isGyroEnabled = false;
+            if (controls3D) controls3D.enabled = true;
+            deviceOrientationControls = null;
+        }
+
+        // عرض طلب إذن الجايروسكوب
+        function showGyroPermissionDialog() {
+            const dialog = document.createElement('div');
+            dialog.className = 'gyro-permission';
+            dialog.innerHTML = `
+                <h3>تفعيل الجايروسكوب</h3>
+                <p>للاستمتاع بتجربة VR كاملة، نحتاج إلى الوصول إلى مستشعر الجايروسكوب في جهازك.</p>
+                <p>سيؤدي هذا إلى تحسين تجربة المشاهدة في وضع VR.</p>
+                <button id="enableGyroBtn">تفعيل الجايروسكوب</button>
+            `;
+            document.body.appendChild(dialog);
+            
+            document.getElementById('enableGyroBtn').addEventListener('click', function() {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            orientationRequested = true;
+                            initDeviceOrientationControls();
+                        }
+                        document.body.removeChild(dialog);
+                    })
+                    .catch(error => {
+                        console.error("Error requesting gyroscope permission:", error);
+                        document.body.removeChild(dialog);
+                    });
+            });
+        }
+        
+        // تهيئة الفيديو
+        videoPlayer.addEventListener('loadedmetadata', function() {
+            loading.style.display = 'none';
+            durationDisplay.textContent = formatTime(videoPlayer.duration);
+            timeDisplayAdv.textContent = `00:00 / ${formatTime(videoPlayer.duration)}`;
+            initThreeJS();
+        });
+
+        videoPlayer.addEventListener('waiting', function() {
+            loading.style.display = 'block';
+        });
+
+        videoPlayer.addEventListener('playing', function() {
+            loading.style.display = 'none';
+        });
+
+        videoPlayer.addEventListener('error', function(e) {
+            console.error("Video error:", e);
+            loading.innerHTML = "خطأ في تحميل الفيديو. تأكد من صحة المسار.";
+        });
+
+        // التحكم في التشغيل والإيقاف
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        vrPlayPauseBtn.addEventListener('click', togglePlayPause);
+
+        function togglePlayPause() {
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                vrPlayPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                isPlaying = true;
+            } else {
+                videoPlayer.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                vrPlayPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                isPlaying = false;
+            }
+        }
+
+        // تحديث شريط التقدم
+        videoPlayer.addEventListener('timeupdate', updateProgress);
+
+        function updateProgress() {
+            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+            progressBar.style.width = `${percent}%`;
+            currentTimeDisplay.textContent = formatTime(videoPlayer.currentTime);
+            timeDisplayAdv.textContent = `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+        }
+
+        // النقر على شريط التقدم
+        progressContainer.addEventListener('click', setProgress);
+
+        function setProgress(e) {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            videoPlayer.currentTime = percent * videoPlayer.duration;
+        }
+
+        // التحكم في الصوت
+        volumeSlider.addEventListener('click', setVolume);
+
+        function setVolume(e) {
+            const rect = volumeSlider.getBoundingClientRect();
+            let percent = (e.clientX - rect.left) / rect.width;
+            percent = Math.max(0, Math.min(1, percent));
+            
+            videoPlayer.volume = percent;
+            volumeLevel.style.width = `${percent * 100}%`;
+            updateVolumeIcon(percent);
+        }
+
+        volumeBtn.addEventListener('click', toggleMute);
+
+        function toggleMute() {
+            if (videoPlayer.volume > 0) {
+                videoPlayer.volume = 0;
+                volumeLevel.style.width = '0%';
+                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                videoPlayer.volume = 1;
+                volumeLevel.style.width = '100%';
+                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        }
+
+        function updateVolumeIcon(volume) {
+            if (volume === 0) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else if (volume < 0.5) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        }
+
+        // وضع ملء الشاشة
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                isFullscreen = true;
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                isFullscreen = false;
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        }
+
+        // وضع VR
+        vrButton.addEventListener('click', toggleVRMode);
+        vrExitBtn.addEventListener('click', toggleVRMode);
+
+        function toggleVRMode() {
+            if (!isVRMode) {
+                // تفعيل وضع VR
+                enableVRMode();
+            } else {
+                // إلغاء وضع VR
+                disableVRMode();
+            }
+        }
+
+        function enableVRMode() {
+            isVRMode = true;
+            modeIndicator.innerHTML = '<i class="fas fa-vr-cardboard"></i><span>وضع العرض: VR</span>';
+            vrButton.innerHTML = '<i class="fas fa-eye"></i> الوضع العادي';
+            
+            initVRMode();
+            
+            // إخفاء التعليمات في وضع VR
+            instructions.style.display = 'none';
+            controls.style.display = 'none';
+        }
+
+        function disableVRMode() {
+            isVRMode = false;
+            modeIndicator.innerHTML = '<i class="fas fa-vr-cardboard"></i><span>وضع العرض: عادي</span>';
+            vrButton.innerHTML = '<i class="fas fa-vr-cardboard"></i> وضع VR';
+            
+            // إعادة تهيئة الوضع العادي
+            while(canvasContainer.firstChild) {
+                canvasContainer.removeChild(canvasContainer.firstChild);
+            }
+            
+            initThreeJS();
+            
+            // إخفاء VR overlay
+            vrOverlay.style.display = 'none';
+            vrControls.style.display = 'none';
+            
+            // إظهار التعليمات والتحكم
+            instructions.style.display = 'block';
+            controls.style.display = 'block';
+            
+            // إيقاف الجايروسكوب
+            disableGyro();
+        }
+
+        // إعادة ضبط المنظر
+        vrResetViewBtn.addEventListener('click', resetView);
+
+        function resetView() {
+            if (controls3D) {
+                controls3D.reset();
+            }
+            if (deviceOrientationControls && isGyroEnabled) {
+                // إعادة ضبط الجايروسكوب
+                deviceOrientationControls.reset();
+            }
+        }
+
+        // التحكم المتقدم
+        advancedToggle.addEventListener('click', function() {
+            advancedControls.style.display = advancedControls.style.display === 'block' ? 'none' : 'block';
+        });
+
+        closeAdvanced.addEventListener('click', function() {
+            advancedControls.style.display = 'none';
+        });
+
+        // جودة الفيديو
+        qualityBtn.addEventListener('click', function() {
+            qualityBtn.classList.toggle('active');
+            qualityBtn.textContent = qualityBtn.classList.contains('active') ? 'HD' : 'SD';
+        });
+
+        // التكرار
+        loopBtn.addEventListener('click', function() {
+            videoPlayer.loop = !videoPlayer.loop;
+            loopBtn.classList.toggle('active');
+            loopBtn.textContent = videoPlayer.loop ? 'ON' : 'OFF';
+        });
+
+        // المسافة بين العينين
+        ipdSlider.addEventListener('input', function() {
+            eyeDistance = parseFloat(this.value);
+            ipdValue.textContent = eyeDistance.toFixed(1);
+            if (isVRMode) {
+                applyVREffects();
+            }
+        });
+
+        // حجم الإطار
+        frameSizeSlider.addEventListener('input', function() {
+            frameSize = parseInt(this.value) / 100;
+            frameSizeValue.textContent = `${this.value}%`;
+            if (isVRMode) {
+                applyVREffects();
+            }
+        });
+
+        // مقياس العرض
+        scaleSlider.addEventListener('input', function() {
+            scaleFactor = parseInt(this.value) / 100;
+            scaleValue.textContent = `${this.value}%`;
+            if (isVRMode) {
+                applyVREffects();
+            }
+        });
+
+        // عكس الصورة
+        invertBtn.addEventListener('click', function() {
+            isInverted = !isInverted;
+            invertBtn.classList.toggle('active');
+            invertBtn.textContent = isInverted ? 'ON' : 'OFF';
+            applyVREffects();
+        });
+
+        // التحكم بالوقت
+        back10s.addEventListener('click', function() {
+            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 10);
+        });
+
+        forward10s.addEventListener('click', function() {
+            videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 10);
+        });
+
+        // سرعة التشغيل
+        speedSlider.addEventListener('input', function() {
+            playbackRate = parseFloat(this.value);
+            videoPlayer.playbackRate = playbackRate;
+            speedValue.textContent = `${playbackRate.toFixed(2)}x`;
+        });
+
+        // مستوى الصوت
+        audioLevelSlider.addEventListener('input', function() {
+            const level = parseInt(this.value);
+            videoPlayer.volume = level / 100;
+            audioLevelValue.textContent = `${level}%`;
+            volumeLevel.style.width = `${level}%`;
+            updateVolumeIcon(level / 100);
+        });
+
+        // إعادة الضبط
+        resetBtn.addEventListener('click', function() {
+            // إعادة تعيين جميع الإعدادات
+            eyeDistance = 0.5;
+            frameSize = 1.0;
+            scaleFactor = 1.0;
+            isInverted = false;
+            playbackRate = 1.0;
+            
+            ipdSlider.value = eyeDistance;
+            ipdValue.textContent = eyeDistance.toFixed(1);
+            
+            frameSizeSlider.value = 100;
+            frameSizeValue.textContent = '100%';
+            
+            scaleSlider.value = 100;
+            scaleValue.textContent = '100%';
+            
+            invertBtn.classList.remove('active');
+            invertBtn.textContent = 'OFF';
+            
+            speedSlider.value = playbackRate;
+            speedValue.textContent = '1.0x';
+            
+            videoPlayer.playbackRate = playbackRate;
+            videoPlayer.currentTime = 0;
+            
+            if (isVRMode) {
+                applyVREffects();
+            }
+            
+            document.body.style.filter = 'none';
+        });
+
+        // إعادة ضبط الحجم عند تغيير حجم النافذة
+        window.addEventListener('resize', function() {
+            if (isVRMode) {
+                // إعادة ضبط وضع VR
+                applyVREffects();
+            } else {
+                // إعادة ضبط الوضع العادي
+                if (camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+        });
+
+        // إخفاء عناصر التحكم تلقائياً
+        container.addEventListener('mousemove', showControls);
+
+        function showControls() {
+            if (!isVRMode) {
+                controls.classList.remove('controls-hidden');
+                instructions.classList.remove('controls-hidden');
+                isMouseMoving = true;
+                
+                clearTimeout(mouseMoveTimeout);
+                mouseMoveTimeout = setTimeout(() => {
+                    if (isPlaying && !isMouseMoving) {
+                        controls.classList.add('controls-hidden');
+                        instructions.classList.add('controls-hidden');
+                    }
+                }, 3000);
+                
+                setTimeout(() => {
+                    isMouseMoving = false;
+                }, 100);
+            }
+        }
+
+        // تنسيق الوقت
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // تهيئة أولية
+        volumeLevel.style.width = `${videoPlayer.volume * 100}%`;
+        updateVolumeIcon(videoPlayer.volume);
+        
+        // بدء تشغيل الفيديو تلقائياً عند التحميل
+        videoPlayer.addEventListener('canplay', function() {
+            videoPlayer.play().then(() => {
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                vrPlayPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                isPlaying = true;
+            }).catch(e => {
+                console.log("التشغيل التلقائي غير مسموح: ", e);
+            });
+        });
+
+        // معالجة أخطاء Three.js
+        window.addEventListener('error', function(e) {
+            console.error("Global error:", e);
+        });
+    </script>
+</body>
+</html>
